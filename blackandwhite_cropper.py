@@ -2,26 +2,26 @@ import cv2
 import numpy as np
 import os
 
-def remove_border(img, threshold=50):
-    # Convert image to grayscale
+def remove_border(img, threshold_black=10, threshold_white=245):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    # Calculate the average color of the border
-    border_color = int((np.average(gray[0, :]) + np.average(gray[-1, :]) + np.average(gray[:, 0]) + np.average(gray[:, -1])) / 4)
+    # For black borders
+    _, thresh_black = cv2.threshold(gray, threshold_black, 255, cv2.THRESH_BINARY)
+    contours_black, _ = cv2.findContours(thresh_black, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if len(contours_black) > 0:
+        cnt_black = max(contours_black, key=cv2.contourArea)
+        x, y, w, h = cv2.boundingRect(cnt_black)
+        img = img[y:y+h, x:x+w]
 
-    # Create a threshold based on the border color
-    if border_color > 127:
-        _, thresh = cv2.threshold(gray, border_color - threshold, 255, cv2.THRESH_BINARY_INV)
-    else:
-        _, thresh = cv2.threshold(gray, border_color + threshold, 255, cv2.THRESH_BINARY)
+    # For white borders
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    _, thresh_white = cv2.threshold(gray, threshold_white, 255, cv2.THRESH_BINARY_INV)
+    contours_white, _ = cv2.findContours(thresh_white, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Find contours
-    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Remove the largest contour
-    if len(contours) > 0:
-        cnt = max(contours, key=cv2.contourArea)
-        x, y, w, h = cv2.boundingRect(cnt)
+    if len(contours_white) > 0:
+        cnt_white = max(contours_white, key=cv2.contourArea)
+        x, y, w, h = cv2.boundingRect(cnt_white)
         img = img[y:y+h, x:x+w]
 
     return img
@@ -41,7 +41,7 @@ for file_name in os.listdir(folder_path):
                 print(f"Unable to read image: {file_name}")
                 continue
 
-            cropped_img = remove_border(img)  # Change this line
+            cropped_img = remove_border(img)
 
             output_file_name = os.path.join(output_folder, f"cropped_{file_name}")
             cv2.imwrite(output_file_name, cropped_img)
