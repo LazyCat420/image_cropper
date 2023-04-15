@@ -26,8 +26,8 @@ def remove_border(img, threshold=50):
 
     return img
 
-folder_path = '/mnt/f/SCRAPED_DATA/test cropping/uncroped'
-output_folder = '/mnt/f/SCRAPED_DATA/test cropping/croped'
+folder_path = '/mnt/f/SCRAPED_DATA/Unsorted/Alexander_Wells'
+output_folder = '/mnt/f/SCRAPED_DATA/Unsorted/Alexander_Wells_Cropped'
 
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
